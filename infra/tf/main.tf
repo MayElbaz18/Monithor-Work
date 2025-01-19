@@ -13,19 +13,6 @@ provider "aws" {
   region = var.aws_region
 }
 
-# Fetch the default VPC information
-data "aws_vpc" "default" {
-  default = true
-}
-
-# Fetch all subnets in the default VPC
-data "aws_subnets" "default" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
-  }
-}
-
 # Jenkins Master Instance
 # Primary Jenkins server that manages the CI/CD pipeline
 resource "aws_instance" "jenkins_master" {
@@ -89,7 +76,7 @@ resource "aws_lb" "MoniThor_app_lb" {
   internal           = false  # Internet-facing load balancer
   load_balancer_type = "application"
   security_groups    = [var.security_group_id]
-  subnets           = data.aws_subnets.default.ids
+  subnets           = [var.subnet_id]
     tags = {
     Name = "MoniThor-application-lb"
     Managed_By  = "Terraform"
@@ -102,7 +89,7 @@ resource "aws_lb_target_group" "MoniThor_app_tg" {
   name     = "MoniThor-app-target-group"
   port     = 8080
   protocol = "HTTP"
-  vpc_id   = data.aws_vpc.default.id
+  vpc_id   = var.vpc_id
 
   # Health check configuration to monitor target health
   health_check {

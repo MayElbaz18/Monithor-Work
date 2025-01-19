@@ -19,7 +19,7 @@
       image: "monithor:{{ docker_tag }}"
       state: started
       volumes: 
-        - /monithor-data:/MoniTHOR--Project
+        - /monithor-data:/MoniTHOR--Project/userdata 
       published_ports:
         - "8080:8080"
       restart_policy: always

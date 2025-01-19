@@ -76,8 +76,8 @@ resource "aws_lb" "MoniThor_app_lb" {
   internal           = false  # Internet-facing load balancer
   load_balancer_type = "application"
   security_groups    = [var.security_group_id]
-  subnets           = [var.subnet_id]
-    tags = {
+  subnets           = var.subnet_ids
+  tags = {
     Name = "MoniThor-application-lb"
     Managed_By  = "Terraform"
   }
@@ -108,6 +108,7 @@ resource "aws_lb_target_group" "MoniThor_app_tg" {
     enabled         = true
   }
 }
+
 # Attach instances to target group
 resource "aws_lb_target_group_attachment" "MoniThor_app_tg_attachment" {
   count            = 2  # Match the number of monitoring instances
@@ -126,4 +127,38 @@ resource "aws_lb_listener" "MoniThor_app_listener" {
     type             = "forward"  # Forward requests to target group
     target_group_arn = aws_lb_target_group.MoniThor_app_tg.arn
   }
+}
+
+# Generate the Ansible inventory file
+resource "local_file" "ansible_inventory" {
+  content = templatefile("${path.module}/../ansible/inventory.yaml.tpl", {
+    jenkins_master_ip       = aws_instance.jenkins_master[0].public_ip
+    docker_agent_ip         = aws_instance.docker_agent[0].public_ip
+    ansible_agent_ip        = aws_instance.ansible_agent[0].public_ip
+    monitoring_instances_ips = aws_instance.monitoring_instances[*].public_ip
+    key_name                = var.key_name
+  })
+  filename = "${path.module}/../ansible/inventory_aws_ec2.yaml"
+}
+
+
+output "jenkins_master_ip" {
+  value = aws_instance.jenkins_master[0].public_ip
+}
+
+
+output "docker_agent_ip" {
+  value = aws_instance.docker_agent[0].public_ip
+}
+
+output "ansible_agent_ip" {
+  value = aws_instance.ansible_agent[0].public_ip
+}
+
+output "monitoring_instances_ips" {
+  value = aws_instance.monitoring_instances[*].public_ip
+}
+
+output "key_name" {
+  value = var.key_name
 }

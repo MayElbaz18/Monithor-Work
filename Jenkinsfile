@@ -98,9 +98,9 @@ pipeline {
     }
 
 
-agent {
-        label 'ansible'
-}
+    agent {
+            label 'ansible'
+    }
     
         stage('Deploy to prod nodes ') {
             steps {

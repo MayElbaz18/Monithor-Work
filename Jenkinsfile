@@ -40,7 +40,7 @@ pipeline {
                         script {
                             sh """
                             sudo docker build -t monithor:${env.COMMIT_ID} .
-                            sudo docker run --network host -d -p 8080:8080 --name monithor_container monithor:temp
+                            sudo docker run --network host -d -p 8080:8080 --name monithor_container monithor:${env.COMMIT_ID}
                             """
                         }
                     }
@@ -62,7 +62,7 @@ pipeline {
                             script {
                                 sh """
                                 sudo docker build -t selenium:${env.COMMIT_ID} .
-                                sudo docker run -d --network host --name selenium_container selenium:temp
+                                sudo docker run -d --network host --name selenium_container selenium:${env.COMMIT_ID}
                                 """
                             }
                         }

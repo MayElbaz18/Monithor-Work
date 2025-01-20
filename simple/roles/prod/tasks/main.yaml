@@ -1,6 +1,6 @@
 ---
-- name: Cleanup old Docker containers before setup  
-  tasks:
+  - name: Cleanup old Docker containers before setup  
+    tasks:
     - name: Stop all running Docker containers
       command: docker stop $(docker ps -q)
 

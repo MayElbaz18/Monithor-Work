@@ -136,14 +136,14 @@ resource "local_file" "ansible_inventory" {
     docker_agent_ip   = aws_instance.docker[0].public_ip
     ansible_agent_ip  = aws_instance.ansible[0].public_ip
     monitoring_instances_ips = aws_instance.monitoring_instances[*].public_ip
-    key_name         = var.key_name
+    key_name         = "${var.key_path}${var.key_name}.pem"
     ssh_user         = var.ssh_user
   })
   filename = "${path.module}/../ansible/inventory.yaml"
 }
 
 # Generate the Ansible configuration file
-resource "local_file" "ansible.cfg" {
+resource "local_file" "ansible_cfg" {
   content = templatefile("${path.module}/../ansible/ansible.cfg.tpl", {
     inventory_file = "${path.module}/../ansible/inventory.yaml"
     remote_user = var.ssh_user

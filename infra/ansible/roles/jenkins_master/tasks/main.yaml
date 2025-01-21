@@ -28,6 +28,7 @@
 
       COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
       RUN jenkins-plugin-cli --plugin-file /usr/share/jenkins/ref/plugins.txt
+      COPY nodes.groovy /usr/local/nodes.groovy
 
       COPY casc.yaml /var/jenkins_home/casc.yaml
       ENV CASC_JENKINS_CONFIG=/var/jenkins_home/casc.yaml
@@ -42,6 +43,7 @@
       git:latest
       workflow-aggregator:latest
       blueocean:latest
+      ansible:latest
 
 - name: Create JCasC configuration file
   copy:
@@ -58,6 +60,8 @@
           loggedInUsersCanDoAnything:
             allowAnonymousRead: false
         systemMessage: "Jenkins configured as code with Docker"
+      jobs:
+        - file: /usr/local/nodes.groovy
 
 - name: Create job configuration file
   copy:
@@ -157,3 +161,7 @@
     password: "admin"
     method: GET
     status_code: 200
+
+- name: Print output to console
+  debug:
+    msg: "Jenkins job created successfully http://{{ ansible_host }}:8080"

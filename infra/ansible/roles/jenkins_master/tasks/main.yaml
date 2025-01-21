@@ -1,94 +1,159 @@
 ---
-- name: Create required directories
-  file:
-    path: "{{ item }}"
-    state: directory
-    owner: 1000
-    group: 1000
-    mode: '0755'
-  loop:
-    - /opt/jenkins
-    - /var/jenkins_home/casc_configs
-  become: yes
+- name: Install required packages
+  apt:
+    name:
+      - docker-compose
+    state: present
+    update_cache: yes
 
-- name: Copy jenkins-casc.yaml to configuration directory
+- name: Create Docker build directory
+  file:
+    path: /tmp/jenkins-docker
+    state: directory
+    mode: "0755"
+
+- name: Create Dockerfile for Jenkins
   copy:
+    dest: "/tmp/jenkins-docker/Dockerfile"
+    content: |
+      FROM jenkins/jenkins:lts
+      ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
+      ENV JENKINS_USER="admin"
+      ENV JENKINS_PASS="admin"
+
+      USER root
+      RUN apt-get update && apt-get install -y curl git jq && apt-get clean
+
+      USER jenkins
+
+      COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
+      RUN jenkins-plugin-cli --plugin-file /usr/share/jenkins/ref/plugins.txt
+
+      COPY casc.yaml /var/jenkins_home/casc.yaml
+      ENV CASC_JENKINS_CONFIG=/var/jenkins_home/casc.yaml
+
+      COPY job-config.xml /usr/share/jenkins/ref/jobs/MoniThorDeployment/config.xml
+
+- name: Create plugins.txt file
+  copy:
+    dest: /tmp/jenkins-docker/plugins.txt
+    content: |
+      pipeline-stage-view:latest
+      git:latest
+      workflow-aggregator:latest
+      blueocean:latest
+
+- name: Create JCasC configuration file
+  copy:
+    dest: /tmp/jenkins-docker/casc.yaml
     content: |
       jenkins:
-        systemMessage: "Automating Jenkins Setup using Docker and Jenkins Configuration as Code\n\n"
-        remotingSecurity:
-          enabled: true
         securityRealm:
           local:
             allowsSignup: false
-            users: 
+            users:
               - id: "admin"
                 password: "admin"
         authorizationStrategy:
-          globalMatrix:
-            permissions:
-              - "Overall/Administer:admin"
-              - "Overall/Read:authenticated"
-      unclassified:
-        location:
-          url: http://<jenkins_master_public_ip>:8080
-      jobs:
-        - file: /usr/local/nodes.groovy
-        - script: |
-            pipelineJob('MoniTHOR-Pipeline') {
-                description('Pipeline Job For MoniTHOR! - WebApp')
-                keepDependencies(false)
-                definition {
-                    cpsScm {
-                        scm {
-                            git {                                remote {
-                                    url('https://github.com/MayElbaz18/Monithor-Work.git')
-                                }
-                                branch('*/main')
-                            }
-                        }
-                        scriptPath('Jenkinsfile')
-                        lightweight(true)
-                    }
-                }
-                triggers {}
-                disabled(false)
-            }
-    dest: /var/jenkins_home/casc_configs/jenkins-casc.yaml
-    owner: 1000
-    group: 1000
-    mode: '0644'
+          loggedInUsersCanDoAnything:
+            allowAnonymousRead: false
+        systemMessage: "Jenkins configured as code with Docker"
 
-- name: Pull Jenkins Docker image
-  docker_image:
-    name: jenkins/jenkins:lts
-    source: pull
+- name: Create job configuration file
+  copy:
+    dest: /tmp/jenkins-docker/job-config.xml
+    content: |
+      <flow-definition plugin="workflow-job@2.42">
+        <description>Job created via Ansible</description>
+        <keepDependencies>false</keepDependencies>
+        <properties/>
+        <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps@2.94">
+          <scm class="hudson.plugins.git.GitSCM" plugin="git@4.13.0">
+            <configVersion>2</configVersion>
+            <userRemoteConfigs>
+              <hudson.plugins.git.UserRemoteConfig>
+                <url>https://github.com/MayElbaz18/Monithor-Work.git</url>
+              </hudson.plugins.git.UserRemoteConfig>
+            </userRemoteConfigs>
+            <branches>
+              <hudson.plugins.git.BranchSpec>
+                <name>*/main</name>
+              </hudson.plugins.git.BranchSpec>
+            </branches>
+            <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+            <submoduleCfg class="list"/>
+            <extensions/>
+          </scm>
+          <scriptPath>Jenkinsfile</scriptPath>
+          <lightweight>true</lightweight>
+        </definition>
+        <triggers/>
+        <disabled>false</disabled>
+      </flow-definition>
 
-- name: Run Jenkins container
-  docker_container:
-    name: jenkins
-    image: jenkins/jenkins:lts
-    state: started
-    restart_policy: always
-    ports:
-      - "8080:8080"
-      - "50000:50000"
-    env:
-      CASC_JENKINS_CONFIG: /var/jenkins_home/casc_configs/jenkins-casc.yaml
-    volumes:
-      - /opt/jenkins:/var/jenkins_home"
+- name: Create docker-compose.yml file
+  copy:
+    dest: /tmp/jenkins-docker/docker-compose.yml
+    content: |
+      version: "3.8"
+      services:
+        jenkins:
+          build:
+            context: .
+          ports:
+            - 8080:8080
+            - 50000:50000
+          volumes:
+            - jenkins_data:/var/jenkins_home
+      volumes:
+        jenkins_data:
 
-- name: Wait for Jenkins to start
+- name: Build Jenkins Docker image
+  command: docker-compose build
+  args:
+    chdir: /tmp/jenkins-docker
+  register: build_result
+  ignore_errors: true
+
+- name: Debug Docker build output
+  debug:
+    var: build_result
+  when: build_result.failed
+
+- name: Check Docker build status
+  fail:
+    msg: "Docker build failed. Please check the debug output above."
+  when: build_result.failed
+
+- name: Start Jenkins container
+  command: docker-compose up -d
+  args:
+    chdir: /tmp/jenkins-docker
+  register: startup_result
+  ignore_errors: true
+
+- name: Debug Docker startup output
+  debug:
+    var: startup_result
+  when: startup_result.failed
+
+- name: Check Docker startup status
+  fail:
+    msg: "Docker startup failed. Please check the debug output above."
+  when: startup_result.failed
+
+- name: Wait for Jenkins to be ready
   uri:
-    url: http://<jenkins_master_public_ip>:8080/login"
+    url: "http://localhost:8080"
     method: GET
     status_code: 200
-  register: jenkins_status
-  until: jenkins_status.status == 200
   retries: 10
   delay: 15
 
-- name: Display Jenkins setup completion message
-  debug:
-    msg: "Jenkins has been successfully set up with Configuration as Code (JCasC). Access it at http://127.0.0.1:8080."
-
+- name: Verify Jenkins job creation
+  uri:
+    url: "http://{{ ansible_host }}:8080/job/MoniThorDeployment/api/json"
+    user: "admin"
+    password: "admin"
+    method: GET
+    status_code: 200

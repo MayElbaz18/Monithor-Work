@@ -15,8 +15,8 @@ provider "aws" {
 
 # Jenkins Master Instance
 # Primary Jenkins server that manages the CI/CD pipeline
-resource "aws_instance" "jenkins_master" {
-  count         = 1  # Set to desired number of instances (currently disabled)
+resource "aws_instance" "jenkins" {
+  count         = 1  # Set to desired number of instances
   ami           = var.ami
   instance_type = var.instance_type
   key_name = var.key_name
@@ -29,8 +29,8 @@ resource "aws_instance" "jenkins_master" {
 
 # Docker Agent Instance
 # Agent that runs docker containers
-resource "aws_instance" "docker_agent" {
-  count         = 1  # Set to desired number of instances (currently disabled)
+resource "aws_instance" "docker" {
+  count         = 1  # Set to desired number of instances 
   ami           = var.ami
   instance_type = var.instance_type
   key_name = var.key_name
@@ -43,8 +43,8 @@ resource "aws_instance" "docker_agent" {
 
 # Ansible Agent Instance
 # Agent that runs ansible containers
-resource "aws_instance" "ansible_agent" {
-  count         = 1  # Set to desired number of instances (currently disabled)
+resource "aws_instance" "ansible" {
+  count         = 1 # Set to desired number of instances
   ami           = var.ami
   instance_type = var.instance_type
   key_name = var.key_name
@@ -58,7 +58,7 @@ resource "aws_instance" "ansible_agent" {
 # Monitoring Application Instances
 # Production instances running the MoniThor monitoring application
 resource "aws_instance" "monitoring_instances" {
-  count         = 2  # Set to desired number of instances (currently disabled)
+  count         = 2  # Set to desired number of instances.
   ami           = var.ami
   instance_type = var.instance_type
   key_name = var.key_name
@@ -97,7 +97,7 @@ resource "aws_lb_target_group" "MoniThor_app_tg" {
     healthy_threshold   = 2    # Number of consecutive successful checks required
     interval            = 30   # Time between health checks (seconds)
     timeout             = 5    # Time to wait for a response (seconds)
-    path                = "/"  # Health check endpoint
+    path                = "/health"  # Health check endpoint
     unhealthy_threshold = 2    # Number of consecutive failed checks required
   }
 
@@ -132,27 +132,54 @@ resource "aws_lb_listener" "MoniThor_app_listener" {
 # Generate the Ansible inventory file
 resource "local_file" "ansible_inventory" {
   content = templatefile("${path.module}/../ansible/inventory.yaml.tpl", {
-    jenkins_master_ip       = aws_instance.jenkins_master[0].public_ip
-    docker_agent_ip         = aws_instance.docker_agent[0].public_ip
-    ansible_agent_ip        = aws_instance.ansible_agent[0].public_ip
+    jenkins_master_ip = aws_instance.jenkins[0].public_ip
+    docker_agent_ip   = aws_instance.docker[0].public_ip
+    ansible_agent_ip  = aws_instance.ansible[0].public_ip
     monitoring_instances_ips = aws_instance.monitoring_instances[*].public_ip
-    key_name                = var.key_name
+    key_name         = var.key_name
+    ssh_user         = var.ssh_user
   })
-  filename = "${path.module}/../ansible/inventory_aws_ec2.yaml"
+  filename = "${path.module}/../ansible/inventory.yaml"
 }
 
+# Generate the Ansible configuration file
+resource "local_file" "ansible.cfg" {
+  content = templatefile("${path.module}/../ansible/ansible.cfg.tpl", {
+    inventory_file = "${path.module}/../ansible/inventory.yaml"
+    remote_user = var.ssh_user
+    private_key_file = "${var.key_path}${var.key_name}.pem"
+    host_key_checking = false
+  })
+  filename = "${path.module}/../ansible/ansible.cfg"
+}
+
+# # Run Ansible after inventory is created
+# resource "null_resource" "run_ansible" {
+#   depends_on = [local_file.ansible_inventory]
+
+#   provisioner "local-exec" {
+#     command = "ansible-playbook -i ${path.module}/../ansible/inventory.yaml --private-key ${var.key_path}${var.key_name}.pem ${path.module}/../ansible/main.yaml"
+#   }
+
+#   # Add triggers to ensure the provisioner runs when instances change
+#   triggers = {
+#     jenkins_instance = aws_instance.jenkins[0].id
+#     docker_instance  = aws_instance.docker[0].id
+#     ansible_instance = aws_instance.ansible[0].id
+#   }
+
+# }
 
 output "jenkins_master_ip" {
-  value = aws_instance.jenkins_master[0].public_ip
+  value = aws_instance.jenkins[0].public_ip
 }
-
 
 output "docker_agent_ip" {
-  value = aws_instance.docker_agent[0].public_ip
+  value = aws_instance.docker[0].public_ip
 }
 
-output "ansible_agent_ip" {
-  value = aws_instance.ansible_agent[0].public_ip
+output "ansible_agent_ip" { 
+  value = aws_instance.ansible[0].public_ip
 }
 
 output "monitoring_instances_ips" {

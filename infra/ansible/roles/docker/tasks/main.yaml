@@ -1,0 +1,19 @@
+---
+- name: Update system packages
+  apt:
+    update_cache: yes
+
+- name: Install Docker
+  apt:
+    name: docker.io
+    state: present
+    
+- name: Start Docker service
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Print output to console
+  debug:
+    msg: "Docker is installed successfully"

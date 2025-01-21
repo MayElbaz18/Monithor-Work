@@ -1,0 +1,56 @@
+---
+- name: Install Java (required for Jenkins agent)
+  apt:
+    name: openjdk-11-jre
+    state: present
+
+- name: Create Jenkins agent work directory
+  file:
+    path: /home/{{ ansible_user }}/jenkins_agent
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0755"
+
+- name: Download Jenkins agent JAR file
+  get_url:
+    url: http://<jenkins_master_public_ip>:8080/jnlpJars/agent.jar"
+    dest: /home/{{ ansible_user }}/jenkins_agent/agent.jar"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+
+- name: Create systemd service file for Jenkins agent
+  copy:
+    dest: /etc/systemd/system/jenkins-agent.service
+    content: |
+      [Unit]
+      Description=Jenkins Agent Service
+      After=network.target
+
+      [Service]
+      User={{ ansible_user }}
+      WorkingDirectory=/home/{{ ansible_user }}/jenkins_agent
+      ExecStart=/usr/bin/java -jar /home/{{ ansible_user }}/jenkins_agent/agent.jar -jnlpUrl http://<jenkins_master_public_ip>:8080 -name {{ inventory_hostname }} -secret {{ jenkins_agent_secret }} -workDir /home/jenkins/agent
+      Restart=always
+      RestartSec=10
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Reload systemd to apply the new service
+  command: systemctl daemon-reload
+
+- name: Enable Jenkins agent service
+  systemd:
+    name: jenkins-agent
+    enabled: yes
+
+- name: Start Jenkins agent service
+  systemd:
+    name: jenkins-agent
+    state: started
+
+- name: Print output to console
+  debug:
+    msg: "Jenkins agent is installed"

@@ -1,0 +1,23 @@
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Install software-properties-common (for managing PPAs)
+  apt:
+    name: software-properties-common
+    state: present
+
+- name: Add the Ansible PPA
+  apt_repository:
+    repo: ppa:ansible/ansible
+    state: present
+
+- name: Install Ansible
+  apt:
+    name: ansible
+    state: present
+
+- name: Print output to console
+  debug:
+    msg: "Ansible is installed successfully"

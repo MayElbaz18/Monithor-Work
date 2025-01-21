@@ -1,0 +1,94 @@
+---
+- name: Create required directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: 1000
+    group: 1000
+    mode: '0755'
+  loop:
+    - /opt/jenkins
+    - /var/jenkins_home/casc_configs
+  become: yes
+
+- name: Copy jenkins-casc.yaml to configuration directory
+  copy:
+    content: |
+      jenkins:
+        systemMessage: "Automating Jenkins Setup using Docker and Jenkins Configuration as Code\n\n"
+        remotingSecurity:
+          enabled: true
+        securityRealm:
+          local:
+            allowsSignup: false
+            users: 
+              - id: "admin"
+                password: "admin"
+        authorizationStrategy:
+          globalMatrix:
+            permissions:
+              - "Overall/Administer:admin"
+              - "Overall/Read:authenticated"
+      unclassified:
+        location:
+          url: http://<jenkins_master_public_ip>:8080
+      jobs:
+        - file: /usr/local/nodes.groovy
+        - script: |
+            pipelineJob('MoniTHOR-Pipeline') {
+                description('Pipeline Job For MoniTHOR! - WebApp')
+                keepDependencies(false)
+                definition {
+                    cpsScm {
+                        scm {
+                            git {                                remote {
+                                    url('https://github.com/MayElbaz18/Monithor-Work.git')
+                                }
+                                branch('*/main')
+                            }
+                        }
+                        scriptPath('Jenkinsfile')
+                        lightweight(true)
+                    }
+                }
+                triggers {}
+                disabled(false)
+            }
+    dest: /var/jenkins_home/casc_configs/jenkins-casc.yaml
+    owner: 1000
+    group: 1000
+    mode: '0644'
+
+- name: Pull Jenkins Docker image
+  docker_image:
+    name: jenkins/jenkins:lts
+    source: pull
+
+- name: Run Jenkins container
+  docker_container:
+    name: jenkins
+    image: jenkins/jenkins:lts
+    state: started
+    restart_policy: always
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    env:
+      CASC_JENKINS_CONFIG: /var/jenkins_home/casc_configs/jenkins-casc.yaml
+    volumes:
+      - /opt/jenkins:/var/jenkins_home"
+
+- name: Wait for Jenkins to start
+  uri:
+    url: http://<jenkins_master_public_ip>:8080/login"
+    method: GET
+    status_code: 200
+  register: jenkins_status
+  until: jenkins_status.status == 200
+  retries: 10
+  delay: 15
+
+- name: Display Jenkins setup completion message
+  debug:
+    msg: "Jenkins has been successfully set up with Configuration as Code (JCasC). Access it at http://127.0.0.1:8080."
+

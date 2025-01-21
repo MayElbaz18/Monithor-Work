@@ -18,6 +18,11 @@ variable "key_name" {
   type        = string
 }
 
+variable "key_path" {
+  description = "Path to the key file"
+  type        = string
+}
+
 variable "security_group_id" {
   description = "Security group ID for EC2 instances"
   type        = string
@@ -30,5 +35,10 @@ variable "subnet_ids" {
 
 variable "vpc_id" {
   description = "VPC ID for EC2 instances"
+  type        = string
+}
+
+variable "ssh_user" {
+  description = "SSH user for EC2 instances"
   type        = string
 }

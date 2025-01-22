@@ -24,7 +24,7 @@
 
 7. Run the following command:
     ```
-    ansible-playbook -i inventory.yaml playbook.yaml
+    ansible-playbook -i inventory.yaml main.yaml
     ```
 
 8. Wait for the ansible to finish configuring the infrastructure.

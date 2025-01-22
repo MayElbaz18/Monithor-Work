@@ -5,7 +5,9 @@
 
 - name: Install Docker
   apt:
-    name: docker.io
+    name: 
+      - docker.io
+      - docker-compose
     state: present
     
 - name: Start Docker service

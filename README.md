@@ -6,10 +6,10 @@
 2. Change key_name and key_path in the terraform.tfvars file.
 3. Navigate to the /Monithor-Work/infra/tf directory
 4. Run the following commands:
-        1. terraform init (Will initialize the terraform project)
-        2. terraform plan (Will plan the terraform project)
-        3. terraform apply (Will apply the terraform project)
-        4. Wait for the terraform to finish provisioning the infrastructure.
+        - ```terraform init``` (Will initialize the terraform project)
+        - ```terraform plan``` (Will plan the terraform project)
+        - ```terraform apply``` (Will apply the terraform project)
+        - Wait for the terraform to finish provisioning the infrastructure.
 
 5. Ensure you have ansible installed on your machine.
 6. Navigate to the /Monithor-Work/infra/ansible directory.

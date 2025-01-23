@@ -50,36 +50,25 @@ pipeline {
                                 sudo rm -rf .git
                             '''
                             
-                            // Clone and debug each step
+                            // Clone and setup
                             sh '''
                                 sudo git clone https://github.com/MayElbaz18/MoniTHOR--Project.git .
-                                echo "After clone, contents:"
-                                ls -la
-                                
                                 sudo git checkout main
-                                echo "After checkout, contents:"
-                                ls -la
-                                
-                                echo "Git status:"
-                                sudo git status
-                                
-                                echo "Git branch info:"
-                                sudo git branch -v
-                                
-                                COMMIT_ID=$(sudo git rev-parse HEAD)
-                                echo "Direct commit ID: $COMMIT_ID"
                             '''
                             
-                            // Now set the environment variable
-                            env.COMMIT_ID = sh(
-                                script: 'sudo git rev-parse HEAD',
+                            // Capture the commit ID in a way that ensures we get the output
+                            def commitIdCmd = sh(
+                                script: '''#!/bin/bash
+                                sudo git rev-parse HEAD | tr -d '\\n' ''',
                                 returnStdout: true
-                            ).trim()
+                            )
                             
-                            echo "Environment COMMIT_ID: ${COMMIT_ID}"
+                            env.COMMIT_ID = commitIdCmd.trim()
+                            echo "Environment COMMIT_ID: ${env.COMMIT_ID}"
                             
+                            // Verify the commit ID was captured
                             if (!env.COMMIT_ID) {
-                                error "Failed to get commit ID. Please check the debug output above."
+                                error "Failed to get commit ID. Raw output was: '${commitIdCmd}'"
                             }
                         }
                     }

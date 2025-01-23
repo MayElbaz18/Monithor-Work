@@ -76,7 +76,7 @@ pipeline {
                                 returnStdout: true
                             ).trim()
                             
-                            echo "Environment COMMIT_ID: ${env.COMMIT_ID}"
+                            echo "Environment COMMIT_ID: ${COMMIT_ID}"
                             
                             if (!env.COMMIT_ID) {
                                 error "Failed to get commit ID. Please check the debug output above."

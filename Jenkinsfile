@@ -44,30 +44,44 @@ pipeline {
                 stage('Clone repo') {
                     steps {
                         script {
-                            // Clean the directory first
-                            sh 'rm -rf .git'
+                            // Clean the workspace completely
+                            sh '''
+                                rm -rf *
+                                rm -rf .git
+                            '''
                             
-                            // Clone with more verbose output
-                            sh """
+                            // Clone and debug each step
+                            sh '''
                                 git clone https://github.com/MayElbaz18/MoniTHOR--Project.git .
+                                echo "After clone, contents:"
+                                ls -la
+                                
                                 git checkout main
-                            """
+                                echo "After checkout, contents:"
+                                ls -la
+                                
+                                echo "Git status:"
+                                git status
+                                
+                                echo "Git branch info:"
+                                git branch -v
+                                
+                                COMMIT_ID=$(git rev-parse HEAD)
+                                echo "Direct commit ID: $COMMIT_ID"
+                            '''
                             
-                            echo "Checking git status..."
-                            sh 'git status'
+                            // Now set the environment variable
+                            env.COMMIT_ID = sh(
+                                script: 'git rev-parse HEAD',
+                                returnStdout: true
+                            ).trim()
                             
-                            echo "Getting commit ID..."
-                            // Use single quotes for the shell command and store in a variable
-                            env.COMMIT_ID = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
-                            echo "Raw commit ID output: ${env.COMMIT_ID}"
+                            echo "Environment COMMIT_ID: ${env.COMMIT_ID}"
                             
-                            if (env.COMMIT_ID) {
-                                echo "Commit ID successfully set to: ${env.COMMIT_ID}"
-                            } else {
-                                error "Failed to get commit ID - git rev-parse HEAD returned empty"
+                            if (!env.COMMIT_ID) {
+                                error "Failed to get commit ID. Please check the debug output above."
                             }
                         }
-                        echo "Clone repo success with commit ID: ${env.COMMIT_ID}"
                     }
                 }
 

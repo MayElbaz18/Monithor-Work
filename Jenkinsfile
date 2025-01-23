@@ -44,19 +44,32 @@ pipeline {
                 stage('Clone repo') {
                     steps {
                         script {
-                            git branch: 'main', url: 'https://github.com/MayElbaz18/MoniTHOR--Project.git'
+                            // Clean the directory first
+                            sh 'rm -rf .git' // Remove any existing git repo
+                            
+                            // Clone with more verbose output
+                            sh """
+                                git clone https://github.com/MayElbaz18/MoniTHOR--Project.git .
+                                git checkout main
+                            """
+                            
                             echo "Checking git status..."
                             sh 'git status'
+                            
                             echo "Getting commit ID..."
-                            env.COMMIT_ID = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
-                            echo "Commit ID: ${env.COMMIT_ID}"
+                            // Add error handling and debugging
+                            def commitIdOutput = sh(script: 'git rev-parse HEAD', returnStdout: true)
+                            echo "Raw commit ID output: ${commitIdOutput}"
                             
-                            if (!env.COMMIT_ID) {
-                                error "Failed to get commit ID - git rev-parse HEAD returned empty"
+                            if (commitIdOutput.trim()) {
+                                env.COMMIT_ID = commitIdOutput.trim()
+                                echo "Commit ID successfully set to: ${env.COMMIT_ID}"
+                                
+                                // Optional: store shortened version if needed
+                                commitId = env.COMMIT_ID.substring(0, 5)
+                            } else {
+                                error "Failed to get commit ID - git rev-parse HEAD returned empty. Directory contents: ${sh(script: 'ls -la', returnStdout: true)}"
                             }
-                            
-                            // Optional: store shortened version if needed
-                            commitId = env.COMMIT_ID.substring(0, 5)
                         }
                         echo "Clone repo success with commit ID: ${env.COMMIT_ID}"
                     }

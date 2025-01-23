@@ -79,8 +79,8 @@ pipeline {
                     steps {
                         script {
                             sh """
-                            sudo docker build -t monithor:${env.COMMIT_ID} .
-                            sudo docker run --network host -d -p 8080:8080 --name monithor_container monithor:${env.COMMIT_ID}
+                            sudo docker build -t monithor:${COMMIT_ID} .
+                            sudo docker run --network host -d -p 8080:8080 --name monithor_container monithor:${COMMIT_ID}
                             """
                         }
                     }
@@ -101,8 +101,8 @@ pipeline {
                         dir('selenium') {
                             script {
                                 sh """
-                                sudo docker build -t selenium:${env.COMMIT_ID} .
-                                sudo docker run -d --network host --name selenium_container selenium:${env.COMMIT_ID}
+                                sudo docker build -t selenium:${COMMIT_ID} .
+                                sudo docker run -d --network host --name selenium_container selenium:${COMMIT_ID}
                                 """
                             }
                         }
@@ -119,8 +119,8 @@ pipeline {
                                 config[key] = value
                             }
                             sh """
-                            sudo docker tag monithor:${env.COMMIT_ID} ${config.DOCKERHUB_USERNAME}/monithor:${env.COMMIT_ID}
-                            sudo docker push ${config.DOCKERHUB_USERNAME}/monithor:${env.COMMIT_ID}
+                            sudo docker tag monithor:${COMMIT_ID} ${config.DOCKERHUB_USERNAME}/monithor:${COMMIT_ID}
+                            sudo docker push ${config.DOCKERHUB_USERNAME}/monithor:${COMMIT_ID}
                             """
                         }
                     }
@@ -157,9 +157,9 @@ pipeline {
                     steps {
                         script {
                             sh """
-                            echo "Deploying using Ansible with Docker image tag: ${env.COMMIT_ID}"
+                            echo "Deploying using Ansible with Docker image tag: ${COMMIT_ID}"
                             cd /home/ubuntu/infra/ansible
-                            ansible-playbook -i inventory.yaml main.yaml --extra-vars "docker_tag=${env.COMMIT_ID}"
+                            ansible-playbook -i inventory.yaml main.yaml --extra-vars "docker_tag=${COMMIT_ID}"
                             """
                         }
                         echo "Finished deployment on prod nodes"

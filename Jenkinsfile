@@ -46,33 +46,33 @@ pipeline {
                         script {
                             // Clean the workspace completely
                             sh '''
-                                rm -rf *
-                                rm -rf .git
+                                sudo rm -rf *
+                                sudo rm -rf .git
                             '''
                             
                             // Clone and debug each step
                             sh '''
-                                git clone https://github.com/MayElbaz18/MoniTHOR--Project.git .
+                                sudo git clone https://github.com/MayElbaz18/MoniTHOR--Project.git .
                                 echo "After clone, contents:"
                                 ls -la
                                 
-                                git checkout main
+                                sudo git checkout main
                                 echo "After checkout, contents:"
                                 ls -la
                                 
                                 echo "Git status:"
-                                git status
+                                sudo git status
                                 
                                 echo "Git branch info:"
-                                git branch -v
+                                sudo git branch -v
                                 
-                                COMMIT_ID=$(git rev-parse HEAD)
+                                COMMIT_ID=$(sudo git rev-parse HEAD)
                                 echo "Direct commit ID: $COMMIT_ID"
                             '''
                             
                             // Now set the environment variable
                             env.COMMIT_ID = sh(
-                                script: 'git rev-parse HEAD',
+                                script: 'sudo git rev-parse HEAD',
                                 returnStdout: true
                             ).trim()
                             

@@ -56,15 +56,19 @@ pipeline {
                                 sudo git checkout main
                             '''
                             
-                            // Capture commit ID directly without using a temporary file
-                            script {
-                                env.COMMIT_ID = sh(script: 'sudo git rev-parse HEAD', returnStdout: true).trim()
-                            }
+                            // Capture commit ID with explicit variable assignment
+                            COMMIT_ID = sh(
+                                returnStdout: true,
+                                script: 'sudo git rev-parse HEAD'
+                            ).trim()
                             
-                            echo "Environment COMMIT_ID: ${env.COMMIT_ID}"
+                            // Set environment variable explicitly
+                            env.COMMIT_ID = COMMIT_ID
+                            
+                            echo "Environment COMMIT_ID: ${COMMIT_ID}"
                             
                             // Verify the commit ID was captured
-                            if (!env.COMMIT_ID) {
+                            if (!COMMIT_ID) {
                                 error "Failed to get commit ID"
                             }
                         }

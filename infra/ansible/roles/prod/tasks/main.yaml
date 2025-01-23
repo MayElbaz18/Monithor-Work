@@ -1,12 +1,14 @@
---- 
-  - name: Create monitor-data directory and set ownership 
-    ansible.builtin.file: 
-      path: /monithor-data
-      state: directory 
-      owner: 1000 
-      group: 1000 
+- hosts: ansible
+  become: yes
+  tasks:
+    - name: Create monitor-data directory and set ownership 
+      ansible.builtin.file: 
+        path: /monithor-data
+        state: directory 
+        owner: 1000 
+        group: 1000 
       mode: '0755'
-
+  
   - name: Pull Docker image
     community.docker.docker_image:
       name: "monithor"

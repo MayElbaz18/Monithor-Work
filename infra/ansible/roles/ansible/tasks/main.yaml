@@ -21,3 +21,39 @@
 - name: Print output to console
   debug:
     msg: "Ansible is installed successfully"
+
+- name: Create infra/ansible directory structure
+  file:
+    path: "/home/{{ ansible_user }}/infra/ansible"
+    state: directory
+    mode: '0755'
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Print output to console
+  debug:
+    msg: "Ansible directory structure created successfully"
+
+- name: Copy ansible.cfg
+  copy:
+    src: "{{ playbook_dir }}/ansible.cfg"
+    dest: "/home/{{ ansible_user }}/infra/ansible/ansible.cfg"
+    mode: '0644'
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Copy inventory.yaml
+  copy:
+    src: "{{ playbook_dir }}/inventory.yaml"
+    dest: "/home/{{ ansible_user }}/infra/ansible/inventory.yaml"
+    mode: '0644'
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Copy prod role tasks
+  copy:
+    src: "{{ playbook_dir }}/roles/prod/tasks/main.yaml"
+    dest: "/home/{{ ansible_user }}/infra/ansibletasks/main.yaml"
+    mode: '0644'
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"

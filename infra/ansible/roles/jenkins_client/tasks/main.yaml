@@ -16,6 +16,12 @@
     group: 1000
     mode: "0755"
 
+- name: Copy .env to jenkins_home
+  copy:
+    src: "{{ playbook_dir }}/.env"
+    dest: /root/.env
+    mode: '0777'
+
 - name: Print directory creation status
   debug:
     msg: "Jenkins agent work directory created at /home/{{ ansible_user }}/jenkins_agent"

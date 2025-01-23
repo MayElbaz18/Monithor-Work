@@ -16,6 +16,12 @@
     state: started
     enabled: yes
 
+- name: Copy hub.cfg to jenkins_home
+  copy:
+    src: "{{ playbook_dir }}/hub.cfg"
+    dest: /home/{{ ansible_user }}/jenkins_agent/hub.cfg
+    mode: '0644'
+
 - name: Print output to console
   debug:
     msg: "Docker is installed successfully"

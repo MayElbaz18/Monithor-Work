@@ -1,4 +1,4 @@
-- hosts: ansible
+- hosts: monitoring
   become: yes
   tasks:
     - name: Create monitor-data directory and set ownership 
@@ -7,21 +7,21 @@
         state: directory 
         owner: 1000 
         group: 1000 
-      mode: '0755'
+        mode: '0755'
   
-  - name: Pull Docker image
-    community.docker.docker_image:
-      name: "monithor"
-      tag: "{{ docker_tag }}"
-      source: pull
+    - name: Pull Docker image
+      community.docker.docker_image:
+        name: "monithor"
+        tag: "{{ docker_tag }}"
+        source: pull
 
-  - name: Run Docker container
-    community.docker.docker_container:
-      name: "monithor_container"
-      image: "monithor:{{ docker_tag }}"
-      state: started
-      volumes: 
-        - /monithor-data:/MoniTHOR--Project
-      published_ports:
-        - "8080:8080"
-      restart_policy: always
+    - name: Run Docker container
+      community.docker.docker_container:
+        name: "monithor_container"
+        image: "monithor:{{ docker_tag }}"
+        state: started
+        volumes: 
+          - /monithor-data:/MoniTHOR--Project
+        published_ports:
+          - "8080:8080"
+        restart_policy: always

@@ -112,7 +112,7 @@ pipeline {
                             sh """
                             echo "Deploying using Ansible with Docker image tag: ${env.COMMIT_ID}"
                             cd /home/ubuntu/infra/ansible
-                            ansible-playbook -i inventory main.yml --extra-vars "docker_tag=${env.COMMIT_ID}"
+                            ansible-playbook -i inventory main.yml main.yaml --extra-vars "docker_tag=${env.COMMIT_ID}"
                             """
                         }
                         echo "Finished deployment on prod nodes"

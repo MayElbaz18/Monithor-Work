@@ -3,7 +3,7 @@
 ## SOP for running the infrastructure
 
 1. Clone the repository https://github.com/MayElbaz18/Monithor-Work.git.
-2. Navigate to the /Monithor-Work/infra/ansible directory and create .env and hub.cfg files with the following variables that we send you in the assignment.
+2. Navigate to the /Monithor-Work/infra/ansible directory and create .env and hub.cfg files with the following variables that we send in the assignment.
 3. Change key_name and key_path in the terraform.tfvars file.
 4. Navigate to the /Monithor-Work/infra/tf directory
 5. Run the following commands one by one:

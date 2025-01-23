@@ -14,11 +14,15 @@ pipeline {
                 stage('Docker Hub Login') {
                     steps {
                         script {
-                            withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'DOCKERHUB_PASSWORD', usernameVariable: 'DOCKERHUB_USERNAME')]) {
-                                sh """
-                                sudo docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-                                """
+                            def configFile = readFile('/home/ubuntu/jenkins_agent/hub.cfg').trim()
+                            def config = [:]
+                            configFile.split('\n').each { line ->
+                                def (key, value) = line.split('=')
+                                config[key] = value
                             }
+                            sh """
+                            sudo docker login -u ${config.DOCKERHUB_USERNAME} -p ${config.DOCKERHUB_PASSWORD}
+                            """
                             echo "Docker Hub login successful"
                         }
                     }
@@ -85,12 +89,16 @@ pipeline {
                 stage('Docker push to docker hub') {
                     steps {
                         script {
-                            withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'DOCKERHUB_PASSWORD', usernameVariable: 'DOCKERHUB_USERNAME')]) {
-                                sh """
-                                sudo docker tag monithor:${env.COMMIT_ID} ${DOCKERHUB_USERNAME}/monithor:${env.COMMIT_ID}
-                                sudo docker push ${DOCKERHUB_USERNAME}/monithor:${env.COMMIT_ID}
-                                """
+                            def configFile = readFile('/home/ubuntu/jenkins_agent/hub.cfg').trim()
+                            def config = [:]
+                            configFile.split('\n').each { line ->
+                                def (key, value) = line.split('=')
+                                config[key] = value
                             }
+                            sh """
+                            sudo docker tag monithor:${env.COMMIT_ID} ${config.DOCKERHUB_USERNAME}/monithor:${env.COMMIT_ID}
+                            sudo docker push ${config.DOCKERHUB_USERNAME}/monithor:${env.COMMIT_ID}
+                            """
                         }
                     }
                 }

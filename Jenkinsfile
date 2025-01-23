@@ -46,7 +46,11 @@ pipeline {
                         script {
                             git branch: 'main', url: 'https://github.com/MayElbaz18/MoniTHOR--Project.git'
                             env.COMMIT_ID = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
-                            commitId = env.COMMIT_ID.substring(0, 5)
+                            if (env.COMMIT_ID) {
+                                commitId = env.COMMIT_ID.substring(0, 5)
+                            } else {
+                                error "Failed to get commit ID"
+                            }
                         }
                         echo "Clone repo success!"
                     }

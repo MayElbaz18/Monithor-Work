@@ -53,7 +53,7 @@
 - name: Copy prod role tasks
   copy:
     src: "{{ playbook_dir }}/roles/prod/tasks/main.yaml"
-    dest: "/home/{{ ansible_user }}/infra/ansibletasks/main.yaml"
+    dest: "/home/{{ ansible_user }}/infra/ansible/main.yaml"
     mode: '0644'
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"

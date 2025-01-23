@@ -16,6 +16,14 @@
     state: started
     enabled: yes
 
+- name: Create jenkins_agent work directory
+  file:
+    path: /home/{{ ansible_user }}/jenkins_agent
+    state: directory
+    owner: 1000
+    group: 1000
+    mode: "0755"
+
 - name: Copy hub.cfg to jenkins_home
   copy:
     src: "{{ playbook_dir }}/hub.cfg"

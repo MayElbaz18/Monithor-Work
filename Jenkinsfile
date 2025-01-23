@@ -3,7 +3,6 @@ pipeline {
     
     environment {
         COMMIT_ID = ''
-        DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials')
     }
     
     stages {
@@ -15,11 +14,11 @@ pipeline {
                 stage('Docker Hub Login') {
                     steps {
                         script {
-                            def hubConfig = readFile('/home/ubuntu/jenkins_agent/hub.cfg').trim()
-                            def (username, password) = hubConfig.tokenize(':')
-                            sh """
-                            sudo docker login -u ${username} -p ${password}
-                            """
+                            withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'DOCKERHUB_PASSWORD', usernameVariable: 'DOCKERHUB_USERNAME')]) {
+                                sh """
+                                sudo docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+                                """
+                            }
                             echo "Docker Hub login successful"
                         }
                     }
@@ -88,9 +87,8 @@ pipeline {
                         script {
                             withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'DOCKERHUB_PASSWORD', usernameVariable: 'DOCKERHUB_USERNAME')]) {
                                 sh """
-                                sudo docker login -u ${DOCKER_HUB_CREDENTIALS_USR} -p ${DOCKER_HUB_CREDENTIALS_Pwd}
-                                sudo docker tag monithor:${env.COMMIT_ID} ${DOCKER_HUB_CREDENTIALS_USR}/monithor:${env.COMMIT_ID}
-                                sudo docker push ${DOCKER_HUB_CREDENTIALS_USR}/monithor:${env.COMMIT_ID}
+                                sudo docker tag monithor:${env.COMMIT_ID} ${DOCKERHUB_USERNAME}/monithor:${env.COMMIT_ID}
+                                sudo docker push ${DOCKERHUB_USERNAME}/monithor:${env.COMMIT_ID}
                                 """
                             }
                         }

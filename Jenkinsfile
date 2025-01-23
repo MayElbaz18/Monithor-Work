@@ -12,6 +12,19 @@ pipeline {
                 label 'docker-agent'
             }
             stages {
+                stage('Docker Hub Login') {
+                    steps {
+                        script {
+                            def hubConfig = readFile('/home/ubuntu/jenkins_agent/hub.cfg').trim()
+                            def (username, password) = hubConfig.tokenize(':')
+                            sh """
+                            sudo docker login -u ${username} -p ${password}
+                            """
+                            echo "Docker Hub login successful"
+                        }
+                    }
+                }
+
                 stage('Clean Workspace') {
                     steps {
                         script {

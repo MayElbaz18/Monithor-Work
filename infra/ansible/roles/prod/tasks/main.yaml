@@ -1,4 +1,4 @@
-- hosts: ansible
+- hosts: monitoring
   become: yes
   tasks:
     - name: Create monitor-data directory and set ownership 

@@ -3,6 +3,7 @@ pipeline {
     
     environment {
         COMMIT_ID = ''
+        DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials')
     }
     
     stages {
@@ -72,9 +73,13 @@ pipeline {
                 stage('Docker push to docker hub') {
                     steps {
                         script {
-                            sh """
-                            sudo docker push monithor:${env.COMMIT_ID} .
-                            """
+                            withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'DOCKERHUB_PASSWORD', usernameVariable: 'DOCKERHUB_USERNAME')]) {
+                                sh """
+                                sudo docker login -u ${DOCKER_HUB_CREDENTIALS_USR} -p ${DOCKER_HUB_CREDENTIALS_Pwd}
+                                sudo docker tag monithor:${env.COMMIT_ID} ${DOCKER_HUB_CREDENTIALS_USR}/monithor:${env.COMMIT_ID}
+                                sudo docker push ${DOCKER_HUB_CREDENTIALS_USR}/monithor:${env.COMMIT_ID}
+                                """
+                            }
                         }
                     }
                 }
@@ -112,7 +117,7 @@ pipeline {
                             sh """
                             echo "Deploying using Ansible with Docker image tag: ${env.COMMIT_ID}"
                             cd /home/ubuntu/infra/ansible
-                            ansible-playbook -i inventory main.yml main.yaml --extra-vars "docker_tag=${env.COMMIT_ID}"
+                            ansible-playbook -i inventory.yaml main.yaml --extra-vars "docker_tag=${env.COMMIT_ID}"
                             """
                         }
                         echo "Finished deployment on prod nodes"

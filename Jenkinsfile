@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Docker Operations') {
             agent {
-                label 'docker'
+                label 'docker-agent'
             }
             stages {
                 stage('Clean Workspace') {
@@ -103,7 +103,7 @@ pipeline {
         
         stage('Ansible Operations') {
             agent {
-                label 'ansible'
+                label 'ansible-agent'
             }
             stages {
                 stage('Deploy to prod nodes') {
@@ -112,7 +112,7 @@ pipeline {
                             sh """
                             echo "Deploying using Ansible with Docker image tag: ${env.COMMIT_ID}"
                             cd /home/ubuntu/infra/ansible
-                            ansible-playbook -i inventory.yaml main.yaml --extra-vars "docker_tag=${env.COMMIT_ID}"
+                            ansible-playbook -i inventory main.yml --extra-vars "docker_tag=${env.COMMIT_ID}"
                             """
                         }
                         echo "Finished deployment on prod nodes"

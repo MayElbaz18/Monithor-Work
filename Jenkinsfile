@@ -56,14 +56,10 @@ pipeline {
                                 sudo git checkout main
                             '''
                             
-                            // Store commit ID in a temporary file to avoid any output formatting issues
-                            sh '''
-                                sudo git rev-parse HEAD > commit.txt
-                                sudo chmod 666 commit.txt
-                            '''
-                            
-                            // Read the commit ID from the file
-                            env.COMMIT_ID = readFile('commit.txt').trim()
+                            // Capture commit ID directly without using a temporary file
+                            script {
+                                env.COMMIT_ID = sh(script: 'sudo git rev-parse HEAD', returnStdout: true).trim()
+                            }
                             
                             echo "Environment COMMIT_ID: ${env.COMMIT_ID}"
                             
@@ -71,9 +67,6 @@ pipeline {
                             if (!env.COMMIT_ID) {
                                 error "Failed to get commit ID"
                             }
-                            
-                            // Clean up
-                            sh 'rm -f commit.txt'
                         }
                     }
                 }

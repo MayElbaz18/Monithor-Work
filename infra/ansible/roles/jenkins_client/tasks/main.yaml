@@ -61,14 +61,6 @@
   debug:
     msg: "Jenkins agent secret: {{ jenkins_agent_secret }}"
 
-- name: Service SH
-  copy:
-    mode: "0755"
-    dest: /home/{{ ansible_user }}/jenkins_agent/service.sh
-    content: |
-      #!/bin/bash java -jar agent.jar -url http://{{ jenkins_master_ip }}:8080/ -secret {{ jenkins_agent_secret }} -name {{ agent_name }} -webSocket -workDir /home/{{ ansible_user }}/jenkins_agent
-
-
 - name: Create systemd service file for Jenkins agent
   copy:
     dest: /etc/systemd/system/jenkins-agent.service
@@ -80,7 +72,12 @@
       [Service]
       User=root
       WorkingDirectory=/home/{{ ansible_user }}/jenkins_agent
-      ExecStart=/bin/bash /home/{{ ansible_user }}/jenkins_agent/service.sh
+      ExecStart=/usr/bin/java -jar /home/{{ ansible_user }}/jenkins_agent/agent.jar \
+          -url http://{{ jenkins_master_ip }}:8080/ \
+          -secret {{ jenkins_agent_secret }} \
+          -name {{ agent_name }} \
+          -webSocket \
+          -workDir /home/{{ ansible_user }}/jenkins_agent
       Restart=always
       RestartSec=10
 

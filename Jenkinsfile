@@ -45,7 +45,7 @@ pipeline {
                     steps {
                         script {
                             // Clean the directory first
-                            sh 'rm -rf .git' // Remove any existing git repo
+                            sh 'rm -rf .git'
                             
                             // Clone with more verbose output
                             sh """
@@ -57,18 +57,14 @@ pipeline {
                             sh 'git status'
                             
                             echo "Getting commit ID..."
-                            // Add error handling and debugging
-                            def commitIdOutput = sh(script: 'git rev-parse HEAD', returnStdout: true)
-                            echo "Raw commit ID output: ${commitIdOutput}"
+                            // Use single quotes for the shell command and store in a variable
+                            env.COMMIT_ID = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                            echo "Raw commit ID output: ${env.COMMIT_ID}"
                             
-                            if (commitIdOutput.trim()) {
-                                env.COMMIT_ID = commitIdOutput.trim()
+                            if (env.COMMIT_ID) {
                                 echo "Commit ID successfully set to: ${env.COMMIT_ID}"
-                                
-                                // Optional: store shortened version if needed
-                                commitId = env.COMMIT_ID.substring(0, 5)
                             } else {
-                                error "Failed to get commit ID - git rev-parse HEAD returned empty. Directory contents: ${sh(script: 'ls -la', returnStdout: true)}"
+                                error "Failed to get commit ID - git rev-parse HEAD returned empty"
                             }
                         }
                         echo "Clone repo success with commit ID: ${env.COMMIT_ID}"

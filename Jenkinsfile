@@ -161,7 +161,7 @@ pipeline {
                                 cd /home/ubuntu/infra/ansible
                                 ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.yaml main.yaml \
                                     --extra-vars "docker_tag=${COMMIT_ID}" \
-                                    --private-key /home/ubuntu/monithor.pem
+                                    --private-key /home/ubuntu/Downloads/monithor.pem
                             """
                         }
                         echo "Finished deployment on prod nodes"

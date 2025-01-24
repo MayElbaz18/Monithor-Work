@@ -9,6 +9,11 @@
         group: 1000 
         mode: '0755'
   
+    - name: Log into Docker Hub
+      community.docker.docker_login:
+        username: "{{ docker_hub_username }}"
+        password: "{{ docker_hub_password }}"
+        
     - name: Pull Docker image
       community.docker.docker_image:
         name: "maye18/monithor"

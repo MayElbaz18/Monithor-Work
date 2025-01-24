@@ -18,7 +18,7 @@
     - name: Run Docker container
       community.docker.docker_container:
         name: "monithor_container"
-        image: "monithor:{{ docker_tag }}"
+        image: "maye18/monithor:{{ docker_tag }}"
         state: started
         volumes: 
           - /monithor-data:/MoniTHOR--Project

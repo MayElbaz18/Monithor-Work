@@ -1,4 +1,16 @@
 ---
+- name: Read terraform variables
+  slurp:
+    src: "{{ playbook_dir }}/../tf/terraform.tfvars"
+  register: terraform_vars_content
+  delegate_to: localhost
+  become: false
+
+- name: Parse terraform variables
+  set_fact:
+    tf_vars: "{{ terraform_vars_content['content'] | b64decode | regex_replace('\\s*=\\s*', ': ') | regex_replace('\"', '') | from_yaml }}"
+  become: false
+
 - name: Install Java (required for Jenkins agent)
   apt:
     name: openjdk-17-jre-headless
@@ -8,13 +20,22 @@
   debug:
     msg: "Java installation completed"
 
-- name: Create Jenkins agent work directory
+- name: Create Downloads directory
   file:
-    path: /home/{{ ansible_user }}/jenkins_agent
+    path: "/home/{{ ansible_user }}/Downloads"
     state: directory
+    mode: '0755'
     owner: 1000
     group: 1000
-    mode: "0755"
+
+- name: Copy SSH private key
+  copy:
+    src: "{{ tf_vars.key_path }}/{{ tf_vars.key_name }}.pem"
+    dest: "/home/{{ ansible_user }}/Downloads/{{ tf_vars.key_name }}.pem"
+    mode: '0600'
+    owner: 1000
+    group: 1000
+
 
 - name: Copy .env to jenkins_home
   copy:

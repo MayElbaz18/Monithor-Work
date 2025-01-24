@@ -3,7 +3,7 @@
   roles:
     - ansible
 
-- hosts: jenkins, docker, monitoring
+- hosts: jenkins, docker, monitoring, ansible
   become: yes
   roles:
     - docker

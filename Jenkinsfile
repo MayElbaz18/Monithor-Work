@@ -186,9 +186,9 @@ pipeline {
                             sh """
                                 echo "Deploying using Ansible with Docker image tag: ${COMMIT_ID}"
                                 cd /home/ubuntu/infra/ansible
-                                ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.yaml main.yaml \
-                                    --extra-vars "docker_tag=${COMMIT_ID} docker_hub_username=${config.DOCKERHUB_USERNAME} docker_hub_password=${config.DOCKERHUB_PASSWORD}" \
-                                    --private-key /home/ubuntu/Downloads/${keyName}.pem                            
+                                ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.yaml main.yaml \\
+                                    --extra-vars '{\"docker_tag\":\"${COMMIT_ID}\",\"docker_hub_username\":\"${config.DOCKERHUB_USERNAME}\",\"docker_hub_password\":\"${config.DOCKERHUB_PASSWORD}\"}' \\
+                                    --private-key /home/ubuntu/Downloads/${keyName}.pem
                             """
                             echo "Finished deployment on prod nodes"
                         }

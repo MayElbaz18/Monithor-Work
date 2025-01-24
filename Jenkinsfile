@@ -167,12 +167,12 @@ pipeline {
                                 returnStdout: true
                             ).trim()                            
                             sh """
-                                sudo docker login -u ${config.DOCKERHUB_USERNAME} -p ${config.DOCKERHUB_PASSWORD}
-                                echo "Deploying using Ansible with Docker image tag: ${COMMIT_ID}"
-                                cd /home/ubuntu/infra/ansible
-                                ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.yaml main.yaml \
-                                    --extra-vars "docker_tag=${COMMIT_ID}" \
-                                    --private-key /home/ubuntu/Downloads/${keyName}.pem                            
+                            sudo docker login -u ${config.DOCKERHUB_USERNAME} -p ${config.DOCKERHUB_PASSWORD}
+                            echo "Deploying using Ansible with Docker image tag: ${COMMIT_ID}"
+                            cd /home/ubuntu/infra/ansible
+                            ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.yaml main.yaml \
+                                --extra-vars "docker_tag=${COMMIT_ID}" \
+                                --private-key /home/ubuntu/Downloads/${keyName}.pem                            
                             """
                             echo "Docker Hub login successful"
                             echo "Finished deployment on prod nodes"

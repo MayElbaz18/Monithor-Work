@@ -157,9 +157,11 @@ pipeline {
                     steps {
                         script {
                             sh """
-                            echo "Deploying using Ansible with Docker image tag: ${COMMIT_ID}"
-                            cd /home/ubuntu/infra/ansible
-                            ansible-playbook -i inventory.yaml main.yaml --extra-vars "docker_tag=${COMMIT_ID}"
+                                echo "Deploying using Ansible with Docker image tag: ${COMMIT_ID}"
+                                cd /home/ubuntu/infra/ansible
+                                ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.yaml main.yaml \
+                                    --extra-vars "docker_tag=${COMMIT_ID}" \
+                                    --private-key /home/ubuntu/monithor.pem
                             """
                         }
                         echo "Finished deployment on prod nodes"

@@ -36,6 +36,13 @@
     owner: 1000
     group: 1000
 
+- name: Store key name in a file
+  copy:
+    content: "{{ tf_vars.key_name }}"
+    dest: "/home/{{ ansible_user }}/Downloads/key_name.txt"
+    mode: '0644'
+    owner: 1000
+    group: 1000
 
 - name: Copy .env to jenkins_home
   copy:

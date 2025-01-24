@@ -153,7 +153,7 @@ pipeline {
                 label 'ansible-agent'
             }
             stages {
-                stage('Docker Hub Login') {
+                stage('Docker Hub Login + Deploy to prod nodes') {
                     steps {
                         script {
                             def configFile = readFile('/home/ubuntu/jenkins_agent/hub.cfg').trim()
@@ -162,31 +162,21 @@ pipeline {
                                 def (key, value) = line.split('=')
                                 config[key] = value
                             }
-                            sh """
-                            sudo docker login -u ${config.DOCKERHUB_USERNAME} -p ${config.DOCKERHUB_PASSWORD}
-                            """
-                            echo "Docker Hub login successful"
-                        }
-                    }
-                }
-
-                stage('Deploy to prod nodes') {
-                    steps {
-                        script {
                             def keyName = sh(
                                 script: 'cat /home/ubuntu/Downloads/key_name.txt',
                                 returnStdout: true
-                            ).trim()
-                            
+                            ).trim()                            
                             sh """
+                                sudo docker login -u ${config.DOCKERHUB_USERNAME} -p ${config.DOCKERHUB_PASSWORD}
                                 echo "Deploying using Ansible with Docker image tag: ${COMMIT_ID}"
                                 cd /home/ubuntu/infra/ansible
                                 ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.yaml main.yaml \
                                     --extra-vars "docker_tag=${COMMIT_ID}" \
-                                    --private-key /home/ubuntu/Downloads/${keyName}.pem
+                                    --private-key /home/ubuntu/Downloads/${keyName}.pem                            
                             """
+                            echo "Docker Hub login successful"
+                            echo "Finished deployment on prod nodes"
                         }
-                        echo "Finished deployment on prod nodes"
                     }
                 }
             }

@@ -109,23 +109,6 @@ pipeline {
                     }
                 }
 
-                stage('Docker push to docker hub') {
-                    steps {
-                        script {
-                            def configFile = readFile('/home/ubuntu/jenkins_agent/hub.cfg').trim()
-                            def config = [:]
-                            configFile.split('\n').each { line ->
-                                def (key, value) = line.split('=')
-                                config[key] = value
-                            }
-                            sh """
-                            sudo docker tag monithor:${COMMIT_ID} ${config.DOCKERHUB_USERNAME}/monithor:${COMMIT_ID}
-                            sudo docker push ${config.DOCKERHUB_USERNAME}/monithor:${COMMIT_ID}
-                            """
-                        }
-                    }
-                }
-
                 stage('Show Results - Selenium') {
                     steps {
                         script {
@@ -141,6 +124,23 @@ pipeline {
                         script {
                             sh """
                             sudo docker logs monithor_container
+                            """
+                        }
+                    }
+                }
+
+                stage('Docker push to docker hub') {
+                    steps {
+                        script {
+                            def configFile = readFile('/home/ubuntu/jenkins_agent/hub.cfg').trim()
+                            def config = [:]
+                            configFile.split('\n').each { line ->
+                                def (key, value) = line.split('=')
+                                config[key] = value
+                            }
+                            sh """
+                            sudo docker tag monithor:${COMMIT_ID} ${config.DOCKERHUB_USERNAME}/monithor:${COMMIT_ID}
+                            sudo docker push ${config.DOCKERHUB_USERNAME}/monithor:${COMMIT_ID}
                             """
                         }
                     }
@@ -169,7 +169,7 @@ pipeline {
                         }
                     }
                 }
-                
+
                 stage('Deploy to prod nodes') {
                     steps {
                         script {

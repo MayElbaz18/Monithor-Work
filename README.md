@@ -4,8 +4,8 @@
 
 1. Clone the repository https://github.com/MayElbaz18/Monithor-Work.git.
 2. Navigate to the /Monithor-Work/infra/ansible directory and create .env and hub.cfg files with the following variables that we send in the assignment.
-3. Change key_name and key_path in the terraform.tfvars file.
-4. Navigate to the /Monithor-Work/infra/tf directory
+3. Navigate to the /Monithor-Work/infra/tf directory
+4. Change key_name and key_path in the terraform.tfvars file.
 5. Run the following commands one by one:
     ```
     terraform init    # Will initialize the terraform project
@@ -35,3 +35,4 @@
 12. Wait for the job to finish running.
 
 13. The job will deploy the infrastructure to the prod nodes.
+

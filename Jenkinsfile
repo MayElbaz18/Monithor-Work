@@ -153,6 +153,23 @@ pipeline {
                 label 'ansible-agent'
             }
             stages {
+                stage('Docker Hub Login') {
+                    steps {
+                        script {
+                            def configFile = readFile('/home/ubuntu/jenkins_agent/hub.cfg').trim()
+                            def config = [:]
+                            configFile.split('\n').each { line ->
+                                def (key, value) = line.split('=')
+                                config[key] = value
+                            }
+                            sh """
+                            sudo docker login -u ${config.DOCKERHUB_USERNAME} -p ${config.DOCKERHUB_PASSWORD}
+                            """
+                            echo "Docker Hub login successful"
+                        }
+                    }
+                }
+                
                 stage('Deploy to prod nodes') {
                     steps {
                         script {

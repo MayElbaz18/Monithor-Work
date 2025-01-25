@@ -138,6 +138,7 @@ resource "local_file" "ansible_inventory" {
     monitoring_instances_ips = aws_instance.monitoring_instances[*].public_ip
     key_name         = "${var.key_path}/${var.key_name}.pem"
     ssh_user         = var.ssh_user
+    load_balancer_dns = aws_lb.MoniThor_app_lb.dns_name
   })
   filename = "${path.module}/../ansible/inventory.yaml"
 }

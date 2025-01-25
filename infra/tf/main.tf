@@ -179,6 +179,14 @@ output "monitoring_instances_ips" {
   value = aws_instance.monitoring_instances[*].public_ip
 }
 
+output "jenkins_url" {
+  value = "http://${aws_instance.jenkins[0].public_ip}:8080"
+}
+
+output "Monithor-WebApp" {
+  value = "http://${aws_lb.MoniThor_app_lb.dns_name}"
+}
+
 output "key_name" {
   value = var.key_name
 }

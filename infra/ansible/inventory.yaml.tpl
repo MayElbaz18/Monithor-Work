@@ -4,6 +4,7 @@ all:
     ansible_user: ${ssh_user}
     jenkins_master_ip: ${jenkins_master_ip}
     ansible_python_interpreter: /usr/bin/python3
+    load_balancer_dns: ${load_balancer_dns}
   children:
     jenkins:
       hosts:

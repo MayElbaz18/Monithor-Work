@@ -136,7 +136,7 @@ resource "local_file" "ansible_inventory" {
     docker_agent_ip   = aws_instance.docker[0].public_ip
     ansible_agent_ip  = aws_instance.ansible[0].public_ip
     monitoring_instances_ips = aws_instance.monitoring_instances[*].public_ip
-    key_name         = "${var.key_path}${var.key_name}.pem"
+    key_name         = "${var.key_path}/${var.key_name}.pem"
     ssh_user         = var.ssh_user
   })
   filename = "${path.module}/../ansible/inventory.yaml"
@@ -153,22 +153,14 @@ resource "local_file" "ansible_cfg" {
   filename = "${path.module}/../ansible/ansible.cfg"
 }
 
-# # Run Ansible after inventory is created
-# resource "null_resource" "run_ansible" {
-#   depends_on = [local_file.ansible_inventory]
+# Run Ansible after inventory is created
+resource "null_resource" "run_ansible" {
+  depends_on = [local_file.ansible_inventory]
 
-#   provisioner "local-exec" {
-#     command = "ansible-playbook -i ${path.module}/../ansible/inventory.yaml --private-key ${var.key_path}${var.key_name}.pem ${path.module}/../ansible/main.yaml"
-#   }
-
-#   # Add triggers to ensure the provisioner runs when instances change
-#   triggers = {
-#     jenkins_instance = aws_instance.jenkins[0].id
-#     docker_instance  = aws_instance.docker[0].id
-#     ansible_instance = aws_instance.ansible[0].id
-#   }
-
-# }
+  provisioner "local-exec" {
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${path.module}/../ansible/inventory.yaml ${path.module}/../ansible/main.yaml "
+  }
+}
 
 output "jenkins_master_ip" {
   value = aws_instance.jenkins[0].public_ip

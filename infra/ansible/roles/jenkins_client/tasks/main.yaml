@@ -20,9 +20,9 @@
   debug:
     msg: "Java installation completed"
 
-- name: Create Downloads directory
+- name: Create Key destination directory
   file:
-    path: "/home/{{ ansible_user }}/Downloads"
+    path: "{{ tf_vars.key_path }}"
     state: directory
     mode: '0755'
     owner: 1000
@@ -31,16 +31,8 @@
 - name: Copy SSH private key
   copy:
     src: "{{ tf_vars.key_path }}/{{ tf_vars.key_name }}.pem"
-    dest: "/home/{{ ansible_user }}/Downloads/{{ tf_vars.key_name }}.pem"
+    dest: "{{ tf_vars.key_path }}/{{ tf_vars.key_name }}.pem"
     mode: '0600'
-    owner: 1000
-    group: 1000
-
-- name: Store key name in a file
-  copy:
-    content: "{{ tf_vars.key_name }}"
-    dest: "/home/{{ ansible_user }}/Downloads/key_name.txt"
-    mode: '0644'
     owner: 1000
     group: 1000
 

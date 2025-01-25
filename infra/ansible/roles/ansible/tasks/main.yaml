@@ -34,6 +34,18 @@
   debug:
     msg: "Ansible directory structure created successfully"
 
+- name: Copy .env file
+  copy:
+    src: "{{ playbook_dir }}/.env"
+    dest: "/home/{{ ansible_user }}/infra/ansible/.env"
+    mode: '0777'
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Print .env file copy status
+  debug:
+    msg: ".env file copied successfully to ansible agent"
+
 - name: Copy ansible.cfg
   copy:
     src: "{{ playbook_dir }}/ansible.cfg"

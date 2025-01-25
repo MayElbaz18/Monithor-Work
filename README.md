@@ -36,3 +36,4 @@
 
 13. The job will deploy the infrastructure to the prod nodes.
 
+14. After the job is finish connect to the lb dns and create user in Monithor-WebApp.

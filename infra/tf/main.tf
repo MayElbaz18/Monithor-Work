@@ -97,7 +97,7 @@ resource "aws_lb_target_group" "MoniThor_app_tg" {
     healthy_threshold   = 2    # Number of consecutive successful checks required
     interval            = 30   # Time between health checks (seconds)
     timeout             = 5    # Time to wait for a response (seconds)
-    path                = "/health"  # Health check endpoint
+    path                = "/"  # Health check endpoint
     unhealthy_threshold = 2    # Number of consecutive failed checks required
   }
 

@@ -9,25 +9,10 @@
         group: 1000 
         mode: '0755'
 
-    - name: Clone MoniTHOR repository
-      git:
-        repo: 'https://github.com/MayElbaz18/MoniTHOR--Project.git'
-        dest: /monithor-data/MoniTHOR--Project
-        version: main
-        force: yes
-
-    - name: Set repository permissions
-      file:
-        path: /monithor-data/MoniTHOR--Project
-        owner: 1000
-        group: 1000
-        mode: '0755'
-        recurse: yes
-
     - name: Copy .env file
       copy:
         src: "{{ playbook_dir }}/.env"
-        dest: /monithor-data/MoniTHOR--Project/.env
+        dest: /monithor-data/.env
         mode: '0777'
         owner: 1000
         group: 1000
@@ -47,9 +32,11 @@
       community.docker.docker_container:
         name: "monithor_container"
         image: "maye18/monithor:{{ docker_tag }}"
+        env_file: 
+          - /monithor-data/.env
         state: started
         volumes: 
-          - /monithor-data/MoniTHOR--Project:/MoniTHOR--Project
+          - /monithor-data:/MoniTHOR--Project/userdata
         published_ports:
           - "8080:8080"
         restart_policy: always

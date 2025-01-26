@@ -32,8 +32,7 @@
       community.docker.docker_container:
         name: "monithor_container"
         image: "maye18/monithor:{{ docker_tag }}"
-        env_file: 
-          - /monithor-data/.env
+        env_file: /monithor-data/.env
         state: started
         volumes: 
           - /monithor-data:/MoniTHOR--Project/userdata
